@@ -72,6 +72,12 @@
     <option value="275">Beach Sunset — $275 per rider</option>
   </select>
 
+  <label for="paymentType">Transaction Type</label>
+  <select id="paymentType">
+    <option value="card">Card</option>
+    <option value="cash">Cash/Venmo</option>
+  </select>
+
   <button onclick="calculate()">Calculate</button>
 
   <div class="results" id="results"></div>
@@ -79,11 +85,15 @@
   <script>
     function calculate() {
       const riders = parseInt(document.getElementById("riders").value);
-      const rideSelect = document.getElementById("rideType");
 
+      const rideSelect = document.getElementById("rideType");
       const ridePrice = parseFloat(rideSelect.value);
+
       const rideName =
         rideSelect.options[rideSelect.selectedIndex].text.split(" — ")[0];
+
+      const paymentType =
+        document.getElementById("paymentType").value;
 
       if (isNaN(riders) || riders < 1) {
         document.getElementById("results").innerHTML =
@@ -91,7 +101,26 @@
         return;
       }
 
-      const total = riders * ridePrice;
+      // Original ride cost
+      const rideSubtotal = riders * ridePrice;
+
+      // Add 5% if transaction type is Card
+      const cardFee =
+        paymentType === "card"
+          ? rideSubtotal * 0.05
+          : 0;
+
+      // Base total includes the card surcharge
+      const baseTotal = rideSubtotal + cardFee;
+
+      // Split the full base total
+      const ranchPayment = baseTotal * 0.80;
+      const guidePayment = baseTotal * 0.20;
+
+      const paymentName =
+        paymentType === "card"
+          ? "Card"
+          : "Cash/Venmo";
 
       document.getElementById("results").innerHTML = `
         <div class="result">
@@ -103,11 +132,44 @@
         </div>
 
         <div class="result">
-          Price Per Rider: <strong>$${ridePrice.toFixed(2)}</strong>
+          Price Per Rider:
+          <strong>$${ridePrice.toFixed(2)}</strong>
         </div>
 
+        <div class="result">
+          Transaction Type:
+          <strong>${paymentName}</strong>
+        </div>
+
+        <div class="result">
+          Ride Subtotal:
+          <strong>$${rideSubtotal.toFixed(2)}</strong>
+        </div>
+
+        ${
+          paymentType === "card"
+            ? `
+              <div class="result">
+                Card Charge (5%):
+                <strong>$${cardFee.toFixed(2)}</strong>
+              </div>
+            `
+            : ""
+        }
+
         <div class="result total">
-          Base Total: $${total.toFixed(2)}
+          Base Total:
+          $${baseTotal.toFixed(2)}
+        </div>
+
+        <div class="result">
+          Paid to Ranch (80%):
+          <strong>$${ranchPayment.toFixed(2)}</strong>
+        </div>
+
+        <div class="result">
+          Paid to Guide (20%):
+          <strong>$${guidePayment.toFixed(2)}</strong>
         </div>
       `;
     }
