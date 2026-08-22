@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Percentage Calculator</title>
+  <title>Ride Calculator</title>
 
   <style>
     body {
@@ -13,16 +13,24 @@
       padding: 20px;
     }
 
+    label {
+      display: block;
+      margin-top: 18px;
+      font-weight: bold;
+    }
+
     input,
+    select,
     button {
       width: 100%;
       padding: 12px;
-      margin-top: 10px;
+      margin-top: 8px;
       font-size: 16px;
       box-sizing: border-box;
     }
 
     button {
+      margin-top: 20px;
       cursor: pointer;
     }
 
@@ -31,23 +39,38 @@
     }
 
     .result {
-      padding: 10px 0;
+      padding: 12px 0;
       border-bottom: 1px solid #ccc;
+    }
+
+    .total {
+      font-size: 22px;
+      font-weight: bold;
     }
   </style>
 </head>
 
 <body>
 
-  <h1>Calculator</h1>
+  <h1>Ride Calculator</h1>
 
-  <label for="amount">Enter amount:</label>
+  <label for="riders">Number of Riders</label>
   <input
     type="number"
-    id="amount"
-    placeholder="Enter a value"
-    step="0.01"
+    id="riders"
+    min="1"
+    value="1"
   />
+
+  <label for="rideType">Type of Ride</label>
+  <select id="rideType">
+    <option value="75">1 Hour — $75 per rider</option>
+    <option value="110">1.5 Hour — $110 per rider</option>
+    <option value="130">2 Hour — $130 per rider</option>
+    <option value="150">Sunset — $150 per rider</option>
+    <option value="250">Beach — $250 per rider</option>
+    <option value="275">Beach Sunset — $275 per rider</option>
+  </select>
 
   <button onclick="calculate()">Calculate</button>
 
@@ -55,43 +78,36 @@
 
   <script>
     function calculate() {
-      const amount = parseFloat(document.getElementById("amount").value);
+      const riders = parseInt(document.getElementById("riders").value);
+      const rideSelect = document.getElementById("rideType");
 
-      if (isNaN(amount)) {
+      const ridePrice = parseFloat(rideSelect.value);
+      const rideName =
+        rideSelect.options[rideSelect.selectedIndex].text.split(" — ")[0];
+
+      if (isNaN(riders) || riders < 1) {
         document.getElementById("results").innerHTML =
-          "<p>Please enter a valid number.</p>";
+          "<p>Please enter at least 1 rider.</p>";
         return;
       }
 
-      // Automatically add 15%
-      const addedPercentage = 15;
-      const adjustedTotal = amount * (1 + addedPercentage / 100);
-
-      // Different portions of the adjusted value
-      const portion50 = adjustedTotal * 0.50;
-      const portion25 = adjustedTotal * 0.25;
-      const portion10 = adjustedTotal * 0.10;
+      const total = riders * ridePrice;
 
       document.getElementById("results").innerHTML = `
         <div class="result">
-          Original: $${amount.toFixed(2)}
+          Ride: <strong>${rideName}</strong>
         </div>
 
         <div class="result">
-          After adding ${addedPercentage}%:
-          <strong>$${adjustedTotal.toFixed(2)}</strong>
+          Riders: <strong>${riders}</strong>
         </div>
 
         <div class="result">
-          50%: $${portion50.toFixed(2)}
+          Price Per Rider: <strong>$${ridePrice.toFixed(2)}</strong>
         </div>
 
-        <div class="result">
-          25%: $${portion25.toFixed(2)}
-        </div>
-
-        <div class="result">
-          10%: $${portion10.toFixed(2)}
+        <div class="result total">
+          Base Total: $${total.toFixed(2)}
         </div>
       `;
     }
