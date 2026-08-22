@@ -6,81 +6,269 @@
   <title>Ride Calculator</title>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      max-width: 600px;
-      margin: 50px auto;
-      padding: 20px;
+      margin: 0;
+      min-height: 100vh;
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        linear-gradient(rgba(75, 48, 28, 0.72), rgba(75, 48, 28, 0.82)),
+        linear-gradient(135deg, #a97c50, #6e4a2f);
+      color: #3b2a1d;
+      padding: 40px 16px;
+    }
+
+    .calculator-card {
+      width: 100%;
+      max-width: 650px;
+      margin: 0 auto;
+      background: #f4ead7;
+      border: 2px solid #7a5234;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow:
+        0 18px 40px rgba(0, 0, 0, 0.28),
+        inset 0 0 0 3px rgba(255, 255, 255, 0.25);
+    }
+
+    .header {
+      text-align: center;
+      padding-bottom: 22px;
+      border-bottom: 2px solid #c9aa7d;
+      margin-bottom: 26px;
+    }
+
+    .header-icon {
+      font-size: 38px;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 34px;
+      color: #5a3924;
+      letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      color: #7c624a;
+      font-size: 15px;
     }
 
     label {
       display: block;
-      margin-top: 18px;
+      margin-top: 20px;
+      margin-bottom: 8px;
       font-weight: bold;
+      font-size: 15px;
+      color: #4e3524;
     }
 
     input,
-    select,
-    button {
+    select {
       width: 100%;
-      padding: 12px;
-      margin-top: 8px;
+      padding: 14px 15px;
+      border: 2px solid #c6a777;
+      border-radius: 10px;
+      background: #fffaf0;
+      color: #3c2b1d;
+      font-family: Arial, sans-serif;
       font-size: 16px;
-      box-sizing: border-box;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: #8b5e34;
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(139, 94, 52, 0.14);
     }
 
     button {
-      margin-top: 20px;
+      width: 100%;
+      margin-top: 28px;
+      padding: 15px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #7c4f2c, #57351f);
+      color: #fff8eb;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 18px;
+      font-weight: bold;
+      letter-spacing: 0.3px;
       cursor: pointer;
+      box-shadow: 0 7px 16px rgba(80, 48, 25, 0.3);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(80, 48, 25, 0.34);
+    }
+
+    button:active {
+      transform: translateY(0);
     }
 
     .results {
-      margin-top: 25px;
+      margin-top: 30px;
+      border: 2px solid #c6a777;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fffaf0;
     }
 
     .result {
-      padding: 12px 0;
-      border-bottom: 1px solid #ccc;
+      padding: 14px 18px;
+      border-bottom: 1px solid #dfcaa7;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      font-family: Arial, sans-serif;
+      font-size: 15px;
+    }
+
+    .result:last-child {
+      border-bottom: none;
+    }
+
+    .result strong {
+      font-size: 16px;
+      color: #3d291b;
+      text-align: right;
     }
 
     .total {
-      font-size: 22px;
+      background: #ead2aa;
+      font-size: 19px;
       font-weight: bold;
+      color: #4d321f;
+      border-top: 2px solid #c09256;
+      border-bottom: 2px solid #c09256;
+    }
+
+    .total strong {
+      font-size: 21px;
+      color: #4d321f;
+    }
+
+    .ranch {
+      background: #e4efd9;
+      color: #3d552f;
+    }
+
+    .ranch strong {
+      color: #355027;
+      font-size: 18px;
+    }
+
+    .guide {
+      background: #f3dfbd;
+      color: #74501f;
+    }
+
+    .guide strong {
+      color: #6a481c;
+      font-size: 18px;
+    }
+
+    .fee {
+      background: #f3e5d2;
+    }
+
+    .error {
+      padding: 16px;
+      color: #8b2d22;
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .footer-note {
+      margin-top: 22px;
+      text-align: center;
+      color: #8a7058;
+      font-size: 12px;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 20px 10px;
+      }
+
+      .calculator-card {
+        padding: 22px 18px;
+        border-radius: 14px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .result {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+      }
+
+      .result strong {
+        text-align: left;
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <h1>Ride Calculator</h1>
+  <div class="calculator-card">
 
-  <label for="riders">Number of Riders</label>
-  <input
-    type="number"
-    id="riders"
-    min="1"
-    value="1"
-  />
+    <div class="header">
+      <div class="header-icon">🐎</div>
+      <h1>Ride Calculator</h1>
+      <div class="subtitle">
+        Calculate ride totals, card charges, and payout splits
+      </div>
+    </div>
 
-  <label for="rideType">Type of Ride</label>
-  <select id="rideType">
-    <option value="75">1 Hour — $75 per rider</option>
-    <option value="110">1.5 Hour — $110 per rider</option>
-    <option value="130">2 Hour — $130 per rider</option>
-    <option value="150">Sunset — $150 per rider</option>
-    <option value="250">Beach — $250 per rider</option>
-    <option value="275">Beach Sunset — $275 per rider</option>
-  </select>
+    <label for="riders">Number of Riders</label>
+    <input
+      type="number"
+      id="riders"
+      min="1"
+      value="1"
+    />
 
-  <label for="paymentType">Transaction Type</label>
-  <select id="paymentType">
-    <option value="card">Card</option>
-    <option value="cash">Cash/Venmo</option>
-  </select>
+    <label for="rideType">Type of Ride</label>
+    <select id="rideType">
+      <option value="75">1 Hour — $75 per rider</option>
+      <option value="110">1.5 Hour — $110 per rider</option>
+      <option value="130">2 Hour — $130 per rider</option>
+      <option value="150">Sunset — $150 per rider</option>
+      <option value="250">Beach — $250 per rider</option>
+      <option value="275">Beach Sunset — $275 per rider</option>
+    </select>
 
-  <button onclick="calculate()">Calculate</button>
+    <label for="paymentType">Transaction Type</label>
+    <select id="paymentType">
+      <option value="card">Card</option>
+      <option value="cash">Cash/Venmo</option>
+    </select>
 
-  <div class="results" id="results"></div>
+    <button onclick="calculate()">Calculate Ride</button>
+
+    <div class="results" id="results"></div>
+
+    <div class="footer-note">
+      Card transactions include a 5% charge before the 80/20 payout split.
+    </div>
+
+  </div>
 
   <script>
     function calculate() {
@@ -97,7 +285,7 @@
 
       if (isNaN(riders) || riders < 1) {
         document.getElementById("results").innerHTML =
-          "<p>Please enter at least 1 rider.</p>";
+          '<div class="error">Please enter at least 1 rider.</div>';
         return;
       }
 
@@ -110,10 +298,10 @@
           ? rideSubtotal * 0.05
           : 0;
 
-      // Base total includes the card surcharge
+      // Base total includes card charge
       const baseTotal = rideSubtotal + cardFee;
 
-      // Split the full base total
+      // Split full base total
       const ranchPayment = baseTotal * 0.80;
       const guidePayment = baseTotal * 0.20;
 
@@ -124,51 +312,53 @@
 
       document.getElementById("results").innerHTML = `
         <div class="result">
-          Ride: <strong>${rideName}</strong>
+          <span>Ride</span>
+          <strong>${rideName}</strong>
         </div>
 
         <div class="result">
-          Riders: <strong>${riders}</strong>
+          <span>Number of Riders</span>
+          <strong>${riders}</strong>
         </div>
 
         <div class="result">
-          Price Per Rider:
+          <span>Price Per Rider</span>
           <strong>$${ridePrice.toFixed(2)}</strong>
         </div>
 
         <div class="result">
-          Transaction Type:
+          <span>Transaction Type</span>
           <strong>${paymentName}</strong>
         </div>
 
         <div class="result">
-          Ride Subtotal:
+          <span>Ride Subtotal</span>
           <strong>$${rideSubtotal.toFixed(2)}</strong>
         </div>
 
         ${
           paymentType === "card"
             ? `
-              <div class="result">
-                Card Charge (5%):
-                <strong>$${cardFee.toFixed(2)}</strong>
+              <div class="result fee">
+                <span>Card Charge (5%)</span>
+                <strong>+$${cardFee.toFixed(2)}</strong>
               </div>
             `
             : ""
         }
 
         <div class="result total">
-          Base Total:
-          $${baseTotal.toFixed(2)}
+          <span>Base Total</span>
+          <strong>$${baseTotal.toFixed(2)}</strong>
         </div>
 
-        <div class="result">
-          Paid to Ranch (80%):
+        <div class="result ranch">
+          <span>Paid to Ranch (80%)</span>
           <strong>$${ranchPayment.toFixed(2)}</strong>
         </div>
 
-        <div class="result">
-          Paid to Guide (20%):
+        <div class="result guide">
+          <span>Paid to Guide (20%)</span>
           <strong>$${guidePayment.toFixed(2)}</strong>
         </div>
       `;
