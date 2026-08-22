@@ -89,6 +89,34 @@
       box-shadow: 0 0 0 4px rgba(139, 94, 52, 0.14);
     }
 
+    .checkbox-row {
+      margin-top: 22px;
+      padding: 14px 16px;
+      border: 2px solid #c6a777;
+      border-radius: 10px;
+      background: #fffaf0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: Arial, sans-serif;
+      cursor: pointer;
+    }
+
+    .checkbox-row input {
+      width: 20px;
+      height: 20px;
+      margin: 0;
+      accent-color: #7c4f2c;
+      cursor: pointer;
+    }
+
+    .checkbox-row label {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
     button {
       width: 100%;
       margin-top: 28px;
@@ -123,6 +151,10 @@
       background: #fffaf0;
     }
 
+    .results:empty {
+      display: none;
+    }
+
     .result {
       padding: 14px 18px;
       border-bottom: 1px solid #dfcaa7;
@@ -142,6 +174,19 @@
       font-size: 16px;
       color: #3d291b;
       text-align: right;
+    }
+
+    .discount {
+      background: #e7f0dd;
+      color: #496136;
+    }
+
+    .discount strong {
+      color: #3f592f;
+    }
+
+    .fee {
+      background: #f3e5d2;
     }
 
     .total {
@@ -176,10 +221,6 @@
     .guide strong {
       color: #6a481c;
       font-size: 18px;
-    }
-
-    .fee {
-      background: #f3e5d2;
     }
 
     .error {
@@ -232,7 +273,7 @@
       <div class="header-icon">🐎</div>
       <h1>Ride Calculator</h1>
       <div class="subtitle">
-        Calculate ride totals, card charges, and payout splits
+        Calculate ride totals, discounts, card charges, and payout splits
       </div>
     </div>
 
@@ -260,12 +301,17 @@
       <option value="cash">Cash/Venmo</option>
     </select>
 
+    <div class="checkbox-row">
+      <input type="checkbox" id="militaryDiscount" />
+      <label for="militaryDiscount">Military Discount — 10% Off</label>
+    </div>
+
     <button onclick="calculate()">Calculate Ride</button>
 
     <div class="results" id="results"></div>
 
     <div class="footer-note">
-      Card transactions include a 5% charge before the 80/20 payout split.
+      Military discount is applied before any 5% card charge. The final total is then split 80/20.
     </div>
 
   </div>
@@ -283,27 +329,43 @@
       const paymentType =
         document.getElementById("paymentType").value;
 
+      const militaryDiscount =
+        document.getElementById("militaryDiscount").checked;
+
       if (isNaN(riders) || riders < 1) {
         document.getElementById("results").innerHTML =
           '<div class="error">Please enter at least 1 rider.</div>';
         return;
       }
 
-      // Original ride cost
+      // Original ride subtotal
       const rideSubtotal = riders * ridePrice;
 
-      // Add 5% if transaction type is Card
-      const cardFee =
-        paymentType === "card"
-          ? rideSubtotal * 0.05
+      // Apply 10% military discount to the subtotal
+      const discountAmount =
+        militaryDiscount
+          ? rideSubtotal * 0.10
           : 0;
 
-      // Base total includes card charge
-      const baseTotal = rideSubtotal + cardFee;
+      const discountedSubtotal =
+        rideSubtotal - discountAmount;
 
-      // Split full base total
-      const ranchPayment = baseTotal * 0.80;
-      const guidePayment = baseTotal * 0.20;
+      // Add 5% card charge AFTER the military discount
+      const cardFee =
+        paymentType === "card"
+          ? discountedSubtotal * 0.05
+          : 0;
+
+      // Final base total
+      const baseTotal =
+        discountedSubtotal + cardFee;
+
+      // Split full final total
+      const ranchPayment =
+        baseTotal * 0.80;
+
+      const guidePayment =
+        baseTotal * 0.20;
 
       const paymentName =
         paymentType === "card"
@@ -335,6 +397,22 @@
           <span>Ride Subtotal</span>
           <strong>$${rideSubtotal.toFixed(2)}</strong>
         </div>
+
+        ${
+          militaryDiscount
+            ? `
+              <div class="result discount">
+                <span>Military Discount (10%)</span>
+                <strong>-$${discountAmount.toFixed(2)}</strong>
+              </div>
+
+              <div class="result">
+                <span>Discounted Subtotal</span>
+                <strong>$${discountedSubtotal.toFixed(2)}</strong>
+              </div>
+            `
+            : ""
+        }
 
         ${
           paymentType === "card"
