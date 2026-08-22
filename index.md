@@ -6,5 +6,5 @@
   text-decoration:none;
   border-radius:6px;
 ">
-  Open Calculator
+  Ponyland Pricing Calculator
 </a>
