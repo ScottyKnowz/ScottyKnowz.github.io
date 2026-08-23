@@ -201,6 +201,15 @@
       background: #f3e5d2;
     }
 
+    .beach-adjustment {
+      background: #e6eef2;
+      color: #405766;
+    }
+
+    .beach-adjustment strong {
+      color: #314957;
+    }
+
     .total {
       background: #ead2aa;
       font-size: 19px;
@@ -320,7 +329,9 @@
 
     <div class="checkbox-row">
       <input type="checkbox" id="militaryDiscount" />
-      <label for="militaryDiscount">Military Discount - 10% Off</label>
+      <label for="militaryDiscount">
+        Military Discount - $5 Off Per Rider
+      </label>
     </div>
 
     <button onclick="calculate()">Calculate Ride</button>
@@ -328,8 +339,9 @@
     <div class="results" id="results"></div>
 
     <div class="footer-note">
-      Military discount is applied before any 5% card charge.
-      The final total is then split 80% to the ranch and 20% to the guide.
+      Military discount deducts $5 per rider before any 5% card charge.
+      Beach rides allocate an additional $25 per rider to the ranch.
+      On card transactions, that allocation becomes $26.25 per rider.
     </div>
 
   </div>
@@ -342,12 +354,12 @@
         label: "Standard Ride",
         description: "Standard pricing is charged per rider.",
         rides: [
-          { name: "1 Hour", price: 75 },
-          { name: "1.5 Hour", price: 110 },
-          { name: "2 Hour", price: 130 },
-          { name: "Beach", price: 250 },
-          { name: "2.5 Hour Sunset", price: 150 },
-          { name: "2.5 Hour Beach Sunset", price: 275 }
+          { name: "1 Hour", price: 75, beach: false },
+          { name: "1.5 Hour", price: 110, beach: false },
+          { name: "2 Hour", price: 130, beach: false },
+          { name: "Beach", price: 250, beach: true },
+          { name: "2.5 Hour Sunset", price: 150, beach: false },
+          { name: "2.5 Hour Beach Sunset", price: 275, beach: true }
         ]
       },
 
@@ -355,12 +367,12 @@
         label: "Single Rider",
         description: "Single rider pricing applies when only one rider is booked.",
         rides: [
-          { name: "1 Hour", price: 85 },
-          { name: "1.5 Hour", price: 125 },
-          { name: "2 Hour", price: 150 },
-          { name: "Beach", price: 270 },
-          { name: "2.5 Hour Sunset", price: 170 },
-          { name: "2.5 Hour Beach Sunset", price: 295 }
+          { name: "1 Hour", price: 85, beach: false },
+          { name: "1.5 Hour", price: 125, beach: false },
+          { name: "2 Hour", price: 150, beach: false },
+          { name: "Beach", price: 270, beach: true },
+          { name: "2.5 Hour Sunset", price: 170, beach: false },
+          { name: "2.5 Hour Beach Sunset", price: 295, beach: true }
         ]
       },
 
@@ -368,12 +380,12 @@
         label: "Private Ride",
         description: "Private ride pricing is charged per rider using the private rate.",
         rides: [
-          { name: "1 Hour", price: 90 },
-          { name: "1.5 Hour", price: 135 },
-          { name: "2 Hour", price: 165 },
-          { name: "Beach", price: 300 },
-          { name: "2.5 Hour Sunset", price: 190 },
-          { name: "2.5 Hour Beach Sunset", price: 325 }
+          { name: "1 Hour", price: 90, beach: false },
+          { name: "1.5 Hour", price: 135, beach: false },
+          { name: "2 Hour", price: 165, beach: false },
+          { name: "Beach", price: 300, beach: true },
+          { name: "2.5 Hour Sunset", price: 190, beach: false },
+          { name: "2.5 Hour Beach Sunset", price: 325, beach: true }
         ]
       }
 
@@ -426,14 +438,20 @@
       const rideSelect =
         document.getElementById("rideType");
 
-      const ridePrice =
-        parseFloat(rideSelect.value);
-
       const rideIndex =
         rideSelect.selectedIndex;
 
+      const selectedRide =
+        pricing[pricingType].rides[rideIndex];
+
+      const ridePrice =
+        selectedRide.price;
+
       const rideName =
-        pricing[pricingType].rides[rideIndex].name;
+        selectedRide.name;
+
+      const isBeachRide =
+        selectedRide.beach;
 
       const paymentType =
         document.getElementById("paymentType").value;
@@ -463,31 +481,55 @@
       const rideSubtotal =
         riders * ridePrice;
 
-      // Apply 10% military discount
-      const discountAmount =
+      // Military discount is $5 per rider
+      const militaryDiscountAmount =
         militaryDiscount
-          ? rideSubtotal * 0.10
+          ? riders * 5
           : 0;
 
       const discountedSubtotal =
-        rideSubtotal - discountAmount;
+        rideSubtotal - militaryDiscountAmount;
 
-      // Add 5% card charge after discount
+      // Add 5% card charge after the military discount
       const cardFee =
         paymentType === "card"
           ? discountedSubtotal * 0.05
           : 0;
 
-      // Final total
+      // Final total paid by customer
       const baseTotal =
         discountedSubtotal + cardFee;
 
-      // Split final total
-      const ranchPayment =
+      // Normal 80/20 split
+      let ranchPayment =
         baseTotal * 0.80;
 
-      const guidePayment =
+      let guidePayment =
         baseTotal * 0.20;
+
+      /*
+        Beach ride adjustment:
+        $25 per rider is shifted from Guide to Ranch.
+
+        For Card:
+        $25 x 1.05 = $26.25 per rider.
+      */
+      let beachRanchAdjustment = 0;
+
+      if (isBeachRide) {
+
+        const beachAdjustmentPerRider =
+          paymentType === "card"
+            ? 25 * 1.05
+            : 25;
+
+        beachRanchAdjustment =
+          riders * beachAdjustmentPerRider;
+
+        ranchPayment += beachRanchAdjustment;
+        guidePayment -= beachRanchAdjustment;
+
+      }
 
       const paymentName =
         paymentType === "card"
@@ -496,6 +538,11 @@
 
       const pricingName =
         pricing[pricingType].label;
+
+      const beachAdjustmentPerRider =
+        paymentType === "card"
+          ? 26.25
+          : 25.00;
 
       document.getElementById("results").innerHTML = `
 
@@ -533,8 +580,8 @@
           militaryDiscount
             ? `
               <div class="result discount">
-                <span>Military Discount (10%)</span>
-                <strong>-$${discountAmount.toFixed(2)}</strong>
+                <span>Military Discount ($5 x ${riders} rider${riders > 1 ? "s" : ""})</span>
+                <strong>-$${militaryDiscountAmount.toFixed(2)}</strong>
               </div>
 
               <div class="result">
@@ -561,13 +608,24 @@
           <strong>$${baseTotal.toFixed(2)}</strong>
         </div>
 
+        ${
+          isBeachRide
+            ? `
+              <div class="result beach-adjustment">
+                <span>Beach Ranch Adjustment (${riders} x $${beachAdjustmentPerRider.toFixed(2)})</span>
+                <strong>+$${beachRanchAdjustment.toFixed(2)} to Ranch</strong>
+              </div>
+            `
+            : ""
+        }
+
         <div class="result ranch">
-          <span>Paid to Ranch (80%)</span>
+          <span>Paid to Ranch</span>
           <strong>$${ranchPayment.toFixed(2)}</strong>
         </div>
 
         <div class="result guide">
-          <span>Paid to Guide (20%)</span>
+          <span>Paid to Guide</span>
           <strong>$${guidePayment.toFixed(2)}</strong>
         </div>
 
@@ -575,7 +633,7 @@
 
     }
 
-    // Populate ride options when page first loads
+    // Populate ride options when the page first loads
     updateRideOptions();
 
   </script>
