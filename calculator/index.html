@@ -340,8 +340,7 @@
 
     <div class="footer-note">
       Military discount deducts $5 per rider before any 5% card charge.
-      Beach rides allocate an additional $25 per rider to the ranch.
-      On card transactions, that allocation becomes $26.25 per rider.
+      On Beach rides, $25 per rider is allocated entirely to the Ranch before calculating the Guide's 20% share.
     </div>
 
   </div>
@@ -487,47 +486,66 @@
           ? riders * 5
           : 0;
 
+      // Subtotal after military discount
       const discountedSubtotal =
         rideSubtotal - militaryDiscountAmount;
 
-      // Add 5% card charge after the military discount
+      // Add 5% card charge after military discount
       const cardFee =
         paymentType === "card"
           ? discountedSubtotal * 0.05
           : 0;
 
-      // Final total paid by customer
+      // Final amount paid by customer
       const baseTotal =
         discountedSubtotal + cardFee;
 
-      // Normal 80/20 split
-      let ranchPayment =
-        baseTotal * 0.80;
-
-      let guidePayment =
-        baseTotal * 0.20;
-
-      /*
-        Beach ride adjustment:
-        $25 per rider is shifted from Guide to Ranch.
-
-        For Card:
-        $25 x 1.05 = $26.25 per rider.
-      */
-      let beachRanchAdjustment = 0;
+      let ranchPayment = 0;
+      let guidePayment = 0;
+      let beachRanchAmount = 0;
+      let guideEligibleAmount = baseTotal;
 
       if (isBeachRide) {
 
-        const beachAdjustmentPerRider =
+        /*
+          Beach rides:
+
+          $25 per rider belongs entirely to the Ranch.
+
+          If paid by card:
+          $25 x 1.05 = $26.25 per rider.
+
+          The Guide earns 20% only on the remaining amount.
+        */
+
+        const beachFeePerRider =
           paymentType === "card"
             ? 25 * 1.05
             : 25;
 
-        beachRanchAdjustment =
-          riders * beachAdjustmentPerRider;
+        beachRanchAmount =
+          riders * beachFeePerRider;
 
-        ranchPayment += beachRanchAdjustment;
-        guidePayment -= beachRanchAdjustment;
+        // Remove Ranch-only Beach portion before Guide calculation
+        guideEligibleAmount =
+          baseTotal - beachRanchAmount;
+
+        // Guide gets 20% of remaining amount
+        guidePayment =
+          guideEligibleAmount * 0.20;
+
+        // Ranch receives everything else
+        ranchPayment =
+          baseTotal - guidePayment;
+
+      } else {
+
+        // Normal rides use simple 80/20 split
+        ranchPayment =
+          baseTotal * 0.80;
+
+        guidePayment =
+          baseTotal * 0.20;
 
       }
 
@@ -539,7 +557,7 @@
       const pricingName =
         pricing[pricingType].label;
 
-      const beachAdjustmentPerRider =
+      const beachFeePerRider =
         paymentType === "card"
           ? 26.25
           : 25.00;
@@ -612,8 +630,13 @@
           isBeachRide
             ? `
               <div class="result beach-adjustment">
-                <span>Beach Ranch Adjustment (${riders} x $${beachAdjustmentPerRider.toFixed(2)})</span>
-                <strong>+$${beachRanchAdjustment.toFixed(2)} to Ranch</strong>
+                <span>Ranch Beach Allocation (${riders} x $${beachFeePerRider.toFixed(2)})</span>
+                <strong>$${beachRanchAmount.toFixed(2)}</strong>
+              </div>
+
+              <div class="result">
+                <span>Amount Used for Guide 20%</span>
+                <strong>$${guideEligibleAmount.toFixed(2)}</strong>
               </div>
             `
             : ""
@@ -633,7 +656,7 @@
 
     }
 
-    // Populate ride options when the page first loads
+    // Populate options when page first loads
     updateRideOptions();
 
   </script>
